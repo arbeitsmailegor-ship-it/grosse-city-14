@@ -20,7 +20,7 @@ public enum DarkMatterMaterialKind : byte
 /// Data-driven pool entry for the liquid and solid components of a synthesis.
 /// New materials can be added in YAML without changing the server's synthesis code.
 /// </summary>
-[Prototype("darkMatterMaterial")]
+[Prototype]
 public sealed partial class DarkMatterMaterialPrototype : IPrototype
 {
     [IdDataField] public string ID { get; private set; } = default!;
