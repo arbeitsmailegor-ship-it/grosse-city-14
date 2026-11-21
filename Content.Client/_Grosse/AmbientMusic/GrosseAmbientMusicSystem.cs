@@ -53,6 +53,12 @@ public sealed partial class GrosseAmbientMusicSystem : EntitySystem
     private static readonly TimeSpan TrackGap = TimeSpan.FromSeconds(4);
 
     /// <summary>
+    ///     Delay before the first track of a round, so the bed joins the round after the player
+    ///     is fully spawned instead of starting on the exact frame of connecting.
+    /// </summary>
+    private static readonly TimeSpan FirstTrackDelay = TimeSpan.FromSeconds(10);
+
+    /// <summary>
     ///     Delay before trying the playlist again, e.g. when it failed to load.
     /// </summary>
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(30);
@@ -62,6 +68,7 @@ public sealed partial class GrosseAmbientMusicSystem : EntitySystem
     [Dependency] private ILogManager _logManager = default!;
     [Dependency] private INetManager _net = default!;
     [Dependency] private IPrototypeManager _proto = default!;
+    [Dependency] private ISharedPlayerManager _player = default!;
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private IStateManager _state = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
@@ -94,6 +101,7 @@ public sealed partial class GrosseAmbientMusicSystem : EntitySystem
     private float _pendingPosition;
     private TimeSpan _currentLength;
     private bool _paused;
+    private bool _inRound;
     private float _targetVolume = BaseVolume;
     private float _volume = SilentVolume;
     private TimeSpan _nextTrackAt;
@@ -169,11 +177,21 @@ public sealed partial class GrosseAmbientMusicSystem : EntitySystem
             return;
 
         // The bed is in-round only: nothing in the lobby, on the round end summary or when disconnected.
+        // Without a local entity there is no one to play for (e.g. after "entities delete"), so the
+        // last track must be stopped instead of lingering as a client-side audio entity.
         // The music setting at zero also mutes it, like it mutes the ambient music.
-        if (_state.CurrentState is not GameplayState || !_net.IsConnected || _targetVolume <= SilentVolume)
+        if (_state.CurrentState is not GameplayState || !_net.IsConnected || _player.LocalEntity == null ||
+            _targetVolume <= SilentVolume)
         {
+            _inRound = false;
             StopAmbience();
             return;
+        }
+
+        if (!_inRound)
+        {
+            _inRound = true;
+            _nextTrackAt = _timing.CurTime + FirstTrackDelay;
         }
 
         // The listener pressed pause in the music player: hold the playlist where it is.
