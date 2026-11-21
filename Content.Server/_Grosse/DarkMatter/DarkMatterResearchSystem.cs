@@ -658,7 +658,7 @@ public sealed partial class DarkMatterResearchSystem : EntitySystem
             {
                 hasLiquid = true;
                 liquidName = Name(liquidItem);
-                if (TryComp<MetaDataComponent>(liquidItem, out var liquidMeta))
+                if (TryComp(liquidItem, out MetaDataComponent? liquidMeta))
                     liquidPrototype = liquidMeta.EntityPrototype?.ID ?? string.Empty;
 
                 liquidMatches = requiredLiquid != null &&
@@ -672,7 +672,7 @@ public sealed partial class DarkMatterResearchSystem : EntitySystem
             {
                 hasOre = true;
                 oreName = Name(oreItem);
-                if (TryComp<MetaDataComponent>(oreItem, out var oreMeta))
+                if (TryComp(oreItem, out MetaDataComponent? oreMeta))
                     orePrototype = oreMeta.EntityPrototype?.ID ?? string.Empty;
 
                 oreMatches = requiredOre != null &&

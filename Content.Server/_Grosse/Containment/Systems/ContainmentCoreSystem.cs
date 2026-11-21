@@ -1217,7 +1217,7 @@ public sealed partial class ContainmentCoreSystem : EntitySystem
         // Взрыв удаляет ядро в том же тике, но консоль, сирена или пуск могут
         // ещё обратиться к нему: Transform() удалённой сущности бросает
         // KeyNotFoundException и роняет сервер. Отдаём пустой список.
-        if (!TryComp<TransformComponent>(core, out var coreXform))
+        if (!TryComp(core, out TransformComponent? coreXform))
             return new List<EntityUid>();
 
         var result = new List<(EntityUid Uid, float Angle)>();

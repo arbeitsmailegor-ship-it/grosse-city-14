@@ -28,6 +28,9 @@ public sealed partial class ResearchArtifactSystem : EntitySystem
     [Dependency] private SharedTransformSystem _transform = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
 
+    private static readonly ProtoId<DamageTypePrototype> HeatDamageType = "Heat";
+    private static readonly ProtoId<DamageTypePrototype> RadiationDamageType = "Radiation";
+
     public override void Initialize()
     {
         base.Initialize();
@@ -133,7 +136,7 @@ public sealed partial class ResearchArtifactSystem : EntitySystem
                 0f,
                 100f);
 
-            if (overheated && _prototype.TryIndex<DamageTypePrototype>("Heat", out var overheatDamage))
+            if (overheated && _prototype.TryIndex(HeatDamageType, out var overheatDamage))
             {
                 _damageable.TryChangeDamage(uid,
                     new DamageSpecifier(overheatDamage, FixedPoint2.New(2f + artifact.Heat * 0.02f)),
@@ -148,7 +151,7 @@ public sealed partial class ResearchArtifactSystem : EntitySystem
                     ? "Структура кристалла разрушена нестабильностью."
                     : "Заряд кристалла исчерпан.";
 
-                if (_prototype.TryIndex<DamageTypePrototype>("Heat", out var heat))
+                if (_prototype.TryIndex(HeatDamageType, out var heat))
                 {
                     _damageable.TryChangeDamage(uid,
                         new DamageSpecifier(heat, FixedPoint2.New(artifact.Stability <= 0f ? 20f : 5f)),
@@ -159,7 +162,7 @@ public sealed partial class ResearchArtifactSystem : EntitySystem
             {
                 // A radioactive crystal keeps emitting even when no formula node is active.
                 if (artifact.RadiationActivity > 0.01f &&
-                    _prototype.TryIndex<DamageTypePrototype>("Radiation", out var radiation))
+                    _prototype.TryIndex(RadiationDamageType, out var radiation))
                 {
                     var origin = Transform(uid);
                     var originPosition = _transform.GetWorldPosition(origin);

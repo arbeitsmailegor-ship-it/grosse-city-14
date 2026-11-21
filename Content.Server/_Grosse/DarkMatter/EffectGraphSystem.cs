@@ -61,6 +61,9 @@ public sealed partial class EffectGraphSystem : EntitySystem
     [Dependency] private IPrototypeManager _prototype = default!;
     [Dependency] private IGameTiming _timing = default!;
 
+    private static readonly ProtoId<DamageTypePrototype> HeatDamageType = "Heat";
+    private static readonly ProtoId<DamageTypePrototype> RadiationDamageType = "Radiation";
+
     private readonly Dictionary<(EntityUid Artifact, int Node), TimeSpan> _timerState = new();
     private readonly Dictionary<(EntityUid Artifact, int Node), float> _accumulatorState = new();
     private readonly Dictionary<(EntityUid Artifact, int Node), float> _memoryState = new();
@@ -1415,7 +1418,7 @@ public sealed partial class EffectGraphSystem : EntitySystem
         if (_prototype.TryIndex<DamageTypePrototype>(id, out var type))
             return type;
 
-        return _prototype.Index<DamageTypePrototype>("Heat");
+        return _prototype.Index(HeatDamageType);
     }
 
     private float GetEffectEfficiency(EntityUid artifact)
@@ -1538,7 +1541,7 @@ public sealed partial class EffectGraphSystem : EntitySystem
         if (!SpendEnergy(context, MathF.Max(0.05f, amount * 0.02f)))
             return false;
 
-        var type = _prototype.Index<DamageTypePrototype>("Heat");
+        var type = _prototype.Index(HeatDamageType);
 
         _damageable.TryChangeDamage(target, new DamageSpecifier(type, FixedPoint2.New(amount)),
             ignoreResistances: true, origin: context.Artifact);
@@ -1592,7 +1595,7 @@ public sealed partial class EffectGraphSystem : EntitySystem
         if (!SpendEnergy(context, MathF.Max(0.05f, amount * 0.02f)))
             return false;
 
-        var type = _prototype.Index<DamageTypePrototype>("Radiation");
+        var type = _prototype.Index(RadiationDamageType);
         _damageable.TryChangeDamage(target, new DamageSpecifier(type, FixedPoint2.New(amount)),
             ignoreResistances: true, origin: context.Artifact);
         context.Result.Applied.Add($"радиация {amount:0.##}");
@@ -1625,7 +1628,7 @@ public sealed partial class EffectGraphSystem : EntitySystem
         if (!SpendEnergy(context, MathF.Max(0.05f, amount * 0.02f)))
             return false;
 
-        var radiation = _prototype.Index<DamageTypePrototype>("Radiation");
+        var radiation = _prototype.Index(RadiationDamageType);
         var absorbed = 0;
         foreach (var target in targets)
         {
